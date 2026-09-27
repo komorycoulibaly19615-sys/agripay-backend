@@ -96,6 +96,28 @@ app.post("/register", async (req, res) => {
     });
   }
 });
+app.get("/register-test", async (req, res) => {
+  try {
+    const email = `test${Date.now()}@agripay.test`;
+    const password = "TestAgripay123";
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const result = await pool.query(
+      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, created_at",
+      ["Test AgriPay", email, hashedPassword]
+    );
+
+    res.status(201).json({
+      status: "Test inscription réussi",
+      user: result.rows[0]
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Erreur test inscription",
+      error: error.message
+    });
+  }
+});
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
