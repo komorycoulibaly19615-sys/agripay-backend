@@ -60,6 +60,40 @@ app.get("/users-test", async (req, res) => {
     });
   }
 });
+app.post("/register", async (req, res) => {
+    const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({
+      status: "Erreur",
+      message: "Nom, email et mot de passe obligatoires"
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, created_at",
+      [name, email, password]
+    );
+
+    res.status(201).json({
+      status: "Inscription réussie",
+      user: result.rows[0]
+    });
+  } catch (error) {
+    if (error.code === "23505") {
+      return res.status(409).json({
+        status: "Erreur",
+        message: "Cet email est déjà utilisé"
+      });
+    }
+
+    res.status(500).json({
+      status: "Erreur serveur",
+      message: error.message
+    });
+  }
+});
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
