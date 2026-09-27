@@ -145,47 +145,6 @@ app.post("/login", async (req, res) => {
     });
   }
 });
-app.get("/login-test", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT id, name, email, password, created_at FROM users ORDER BY id ASC LIMIT 1"
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        status: "Erreur",
-        message: "Aucun utilisateur disponible pour le test"
-      });
-    }
-
-    const user = result.rows[0];
-    const passwordValid = await bcrypt.compare(
-      "TestAgripay123",
-      user.password
-    );
-
-    if (!passwordValid) {
-      return res.status(401).json({
-        status: "Erreur",
-        message: "Mot de passe de test incorrect"
-      });
-    }
-
-    res.json({
-      status: "Test connexion réussi",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "Erreur test connexion",
-      message: error.message
-    });
-  }
-});
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
