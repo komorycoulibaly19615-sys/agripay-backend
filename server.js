@@ -46,7 +46,20 @@ async function createUsersTable() {
     }
   }
 createUsersTable();
-
+app.get("/users-test", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT id, name, email, created_at FROM users");
+    res.json({
+      status: "Table users opérationnelle",
+      users: result.rows
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Erreur table users",
+      error: error.message
+    });
+  }
+});
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
