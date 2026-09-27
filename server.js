@@ -96,6 +96,55 @@ app.post("/register", async (req, res) => {
     });
   }
 });
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      status: "Erreur",
+      message: "Email et mot de passe obligatoires"
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      "SELECT id, name, email, password, created_at FROM users WHERE email = $1",
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        status: "Erreur",
+        message: "Email ou mot de passe incorrect"
+      });
+    }
+
+    const user = result.rows[0];
+    const passwordValid = await bcrypt.compare(password, user.password);
+
+    if (!passwordValid) {
+      return res.status(401).json({
+        status: "Erreur",
+        message: "Email ou mot de passe incorrect"
+      });
+    }
+
+    res.json({
+      status: "Connexion réussie",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        created_at: user.created_at
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Erreur serveur",
+      message: error.message
+    });
+  }
+});
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
